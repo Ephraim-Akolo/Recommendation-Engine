@@ -1,14 +1,34 @@
 __version__ = "0.1"
 
 import numpy as np
+from time import time
 import joblib
 
 class RecommendationEngine:
     '''
     Recommendation model designed specially for the Sako mobile app.
+
+    hyper parameters:
+
+        learining_rate (float): the speed at which the model learns. The higher the value less likely it is to reach a global minima.
+
+        l1 (float): the regularization parameter used to prevent overfitting of the model.
+
+        gradient ("stoich",): the method of gradient calculation.
+
+        tol (int): the number of iteration without improvements before the model stops learning.
+
+        max_iter (int): the maximum number of iteration the model is allowed to learn for.
+
+        min_M (int): the minimum number of columns (users) in the training matrix.
+
+        min_N (int): the minimum number of rows (products) in the training matrix. 
+
+        R (2): the matrix factorization size.
+
     '''
 
-    def __init__(self, learning_rate=0.01, l1=0.01, gradient="stoch", tol=50 , max_iter=50000, min_M=3, min_N=3, R=2) -> None:
+    def __init__(self, learning_rate=0.01, l1=0.01, gradient="stoch", tol=500 , max_iter=50000, min_M=3, min_N=3, R=2) -> None:
         self.learning_rate = learning_rate
         self.l1 = l1
         self.gradient = gradient
@@ -19,14 +39,15 @@ class RecommendationEngine:
         self.R = R
     
     def train(self, matrix:np.ndarray) -> None:
-
         M, N = matrix.shape
         self.no_of_ratings = no_of_ratings = (matrix > 0).sum()
         if M < self.min_M or N < self.min_N or no_of_ratings < 10:
             return
         rng = np.random.default_rng()
-        matrix_1 = rng.uniform(1, 2, size=(M, self.R))
-        matrix_2 = rng.uniform(1, 2, size=(self.R, N))
+        matrix_1 = np.ones((M, self.R), dtype=np.float16)
+        matrix_2 = np.ones((self.R, N), dtype=np.float16)
+        self.matrix_1 = rng.uniform(1, 2, size=(M, self.R))
+        self.matrix_2 = rng.uniform(1, 2, size=(self.R, N))
         if self.gradient == "stoch":
             self._stochastic_gradient_decent(matrix, matrix_1, matrix_2)
     
@@ -36,7 +57,7 @@ class RecommendationEngine:
         l1 = self.l1
         R = self.R
         old_total_loss = 1
-        total_loss = y = e = tol = 0
+        total_loss = y = e = p = q = tol = 0
         _tol = self.tol
         for count in range(self.max_iter):
             rating_no = 0
@@ -47,26 +68,28 @@ class RecommendationEngine:
                     y = matrix_1[i,:].dot(matrix_2[:, j])
                     e = matrix[i, j] - y
                     for k in range(R):
-                        matrix_1[i, k] += (learning_rate*(2*e*matrix_2[k, j] - l1*matrix_1[i, k]))
-                        matrix_2[k, j] += (learning_rate*(2*e*matrix_1[i, k] - l1*matrix_2[k, j]))
+                        p = (learning_rate*(2.*e*matrix_2[k, j] - l1*matrix_1[i, k]))
+                        q = (learning_rate*(2.*e*matrix_1[i, k] - l1*matrix_2[k, j]))
+                        matrix_1[i, k] += p
+                        matrix_2[k, j] += q
                     y = matrix_1[i,:].dot(matrix_2[:, j])
                     loss[rating_no] = (matrix[i, j] - y)**2
                     rating_no += 1
-            total_loss = loss.sum()
-            print("Loss:", total_loss)
+            total_loss = np.average(loss)
+            print("Loss:", total_loss, rating_no)
 
             if tol >= _tol:
                 break
             if total_loss >= old_total_loss:
-                print("critical", total_loss>old_total_loss)
+                #print("critical", "ONE", matrix_1, "TWO", matrix_2.T, "THREE", matrix, sep="\n\n")
                 tol += 1
+                if tol == 1:
+                    self.matrix_1[:] = matrix_1
+                    self.matrix_2[:] = matrix_2
             else:
                 tol = 0
-            old_total_loss = total_loss
-
+                old_total_loss = total_loss
         print(count)
-        self.matrix_1 = matrix_1
-        self.matrix_2 = matrix_2
     
 
     def recommend(self):
@@ -74,7 +97,8 @@ class RecommendationEngine:
             
 if __name__ == "__main__":
     r = RecommendationEngine()
-    m = np.random.default_rng().integers(0, 5, size=(10, 10))
+    m = np.random.default_rng().integers(0, 5, size=(50000, 50000), dtype=np.int8)
     r.train( m)
     print(r.matrix_1.dot(r.matrix_2).round())
     print(m)
+   
