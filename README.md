@@ -32,7 +32,7 @@ Project statement: Build a recommendation engine tfor the Sako user application 
 
 ## Recommendation System:
 
-## Model
+### Model
 Model algorithm is designed based on the matrix factorization principle (dimensionality reduction). It is a linear model with no inputs or activation function. The complete model is design as an incremental learning algorithm i.e it is able to retrain itself without forgetting its previous knowledge (warm start).
 
 __Other research algorithms:__
@@ -54,7 +54,8 @@ __Project Frameworks:__
 
 __Project source code:__
 
-    • [https://github.com/jake-ephraim/Recommendation-Engine/tree/master](https://github.com/jake-ephraim/Recommendation-Engine/tree/master)
+
+[https://github.com/jake-ephraim/Recommendation-Engine/tree/master](https://github.com/jake-ephraim/Recommendation-Engine/tree/master)
 
 
 
@@ -62,7 +63,7 @@ __Project source code:__
 
 
 ### Model  training flowchart
-![flowchart](https://github.com/jake-ephraim/Recommendation-Engine/blob/Master/model flowchart.png?raw=true)
+![flowchart](https://github.com/jake-ephraim/Recommendation-Engine/raw/master/data/images/model%20flowchart.png)
 
 ## Deployment
 Model will be deployed as a service i.e it will be hosted on a server where it can be ascessed through a post or get request. The model will be continously monitored and maintained by the machine learning team. This is because models intelligence tend to degrade overtime as human behavoir also changes with time, therefore, the model has to be retrained occationally and redeployed to service.
