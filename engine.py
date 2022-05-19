@@ -1,7 +1,6 @@
 __version__ = "0.1"
 
 import numpy as np
-from time import time
 import joblib
 
 class RecommendationEngine:
@@ -38,20 +37,36 @@ class RecommendationEngine:
         self.min_N = min_N
         self.R = R
     
-    def train(self, matrix:np.ndarray) -> None:
+    def train(self, matrix:np.ndarray, matrix_init = "random") -> None:
+        '''
+        Train the model with fresh data (matrix).
+
+        Parameters:
+
+            matrix (numpy array): the training data (matrix).
+
+            matrix_init ("random", "ones"): initializes the matrices randomly or with 1's.
+        '''
         M, N = matrix.shape
         self.no_of_ratings = no_of_ratings = (matrix > 0).sum()
         if M < self.min_M or N < self.min_N or no_of_ratings < 10:
             return
         rng = np.random.default_rng()
-        matrix_1 = np.ones((M, self.R), dtype=np.float16)
-        matrix_2 = np.ones((self.R, N), dtype=np.float16)
-        self.matrix_1 = rng.uniform(1, 2, size=(M, self.R))
-        self.matrix_2 = rng.uniform(1, 2, size=(self.R, N))
+        if matrix_init == "random":
+            matrix_1 = rng.uniform(1, 2, size=(M, self.R))
+            matrix_2 = rng.uniform(1, 2, size=(self.R, N))
+        elif matrix_init == "ones":
+            matrix_1 = np.ones((M, self.R), dtype=np.float16)
+            matrix_2 = np.ones((self.R, N), dtype=np.float16)
+        self.matrix_1 = np.ones((M, self.R), dtype=np.float16)
+        self.matrix_2 = np.ones((self.R, N), dtype=np.float16)
         if self.gradient == "stoch":
             self._stochastic_gradient_decent(matrix, matrix_1, matrix_2)
     
     def _stochastic_gradient_decent(self, matrix:np.ndarray, matrix_1:np.ndarray, matrix_2:np.ndarray):
+        '''
+        The stochastic gradient decent used to find the global minima of the.
+        '''
         loss = np.zeros(self.no_of_ratings)
         learning_rate = self.learning_rate
         l1 = self.l1
@@ -76,12 +91,11 @@ class RecommendationEngine:
                     loss[rating_no] = (matrix[i, j] - y)**2
                     rating_no += 1
             total_loss = np.average(loss)
-            print("Loss:", total_loss, rating_no)
+            print("Loss:", total_loss)
 
             if tol >= _tol:
                 break
             if total_loss >= old_total_loss:
-                #print("critical", "ONE", matrix_1, "TWO", matrix_2.T, "THREE", matrix, sep="\n\n")
                 tol += 1
                 if tol == 1:
                     self.matrix_1[:] = matrix_1
@@ -97,7 +111,7 @@ class RecommendationEngine:
             
 if __name__ == "__main__":
     r = RecommendationEngine()
-    m = np.random.default_rng().integers(0, 5, size=(50000, 50000), dtype=np.int8)
+    m = np.random.default_rng().integers(0, 5, size=(50, 50), dtype=np.int8)
     r.train( m)
     print(r.matrix_1.dot(r.matrix_2).round())
     print(m)
