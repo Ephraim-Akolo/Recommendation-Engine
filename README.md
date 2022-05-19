@@ -10,7 +10,8 @@ Project statement: Build a recommendation engine tfor the Sako user application 
     • Recommend products to new users after model is trained
     • Recommend new products to users after model is trained
     • online incremental training of model (warm training)
-    • Retraining model occasionally to revive model performance (performance reduce with time)
+    • Retraining model occasionally to revive model performance (performance reduces with time)
+    • Model deployment
     • Model serving
 
 ### Project targets
