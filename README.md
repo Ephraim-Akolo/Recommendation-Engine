@@ -62,7 +62,7 @@ __Project source code:__
 
 
 ### Model  training flowchart
-![flowchart](./data/images/model flowchart.png)
+![flowchart](https://github.com/jake-ephraim/Recommendation-Engine/blob/Master/model flowchart.png?raw=true)
 
 ## Deployment
 Model will be deployed as a service i.e it will be hosted on a server where it can be ascessed through a post or get request. The model will be continously monitored and maintained by the machine learning team. This is because models intelligence tend to degrade overtime as human behavoir also changes with time, therefore, the model has to be retrained occationally and redeployed to service.
