@@ -19,6 +19,10 @@ class RecommendationEngine:
 
         max_iter (int): the maximum number of iteration the model is allowed to learn for.
 
+        M (int): size of trained users
+
+        N (int): size of trained products
+
         min_M (int): the minimum number of columns (users) in the training matrix.
 
         min_N (int): the minimum number of rows (products) in the training matrix. 
@@ -26,17 +30,62 @@ class RecommendationEngine:
         R (2): the matrix factorization size.
 
     '''
+   
+    learning_rate = 0.01
 
-    def __init__(self, learning_rate=0.01, l1=0.01, gradient="stoch", tol=500 , max_iter=50000, min_M=3, min_N=3, R=2) -> None:
-        self.learning_rate = learning_rate
-        self.l1 = l1
-        self.gradient = gradient
-        self.tol = tol
-        self.max_iter = max_iter
-        self.min_M = min_M
-        self.min_N = min_N
-        self.R = R
+    l1 = 0.01
+
+    gradient = "stoch"
+
+    tol = 500
+
+    max_iter = 50000
+
+    M = 0
+
+    N = 0
+
+    min_M = 3
+
+    min_N = 3
+
+    max_rating = 10
+
+    R = 2
+
+    def __init__(self, learning_rate:float=None, l1=0.01, gradient:str=None, tol:int=None , max_iter:int=None, min_M:int=None, min_N:int=None, max_rating:int=None, R:int=None) -> None:
+        if learning_rate:
+            self.learning_rate = learning_rate
+        if l1:
+            self.l1 = l1
+        if gradient:
+            self.gradient = gradient
+        if tol:
+            self.tol = tol
+        if max_iter:
+            self.max_iter = max_iter
+        if min_M:
+            self.min_M = min_M
+        if min_N:
+            self.min_N = min_N
+        if max_rating:
+            self.max_rating = max_rating
+        if R:
+            self.R = R
     
+    def warm_training(self,id:int, products:np.ndarray, feature="product"):
+        '''
+        Performs an incremental training on feature without modifying the trained weights.
+        parameters:
+
+            id (int): The persistent id number of the user.
+
+            products (numpy array): all products the user have rated.
+
+            feature ("product", "user"): the feature to train. it could be a new user or product.
+        '''
+        pass
+
     def train(self, matrix:np.ndarray, matrix_init = "random") -> None:
         '''
         Train the model with fresh data (matrix).
@@ -49,7 +98,7 @@ class RecommendationEngine:
         '''
         M, N = matrix.shape
         self.no_of_ratings = no_of_ratings = (matrix > 0).sum()
-        if M < self.min_M or N < self.min_N or no_of_ratings < 10:
+        if M < self.min_M or N < self.min_N or no_of_ratings < self.max_rating:
             return
         rng = np.random.default_rng()
         if matrix_init == "random":
@@ -60,6 +109,8 @@ class RecommendationEngine:
             matrix_2 = np.ones((self.R, N), dtype=np.float16)
         self.matrix_1 = np.ones((M, self.R), dtype=np.float16)
         self.matrix_2 = np.ones((self.R, N), dtype=np.float16)
+        self.M = M
+        self.N = N
         if self.gradient == "stoch":
             self._stochastic_gradient_decent(matrix, matrix_1, matrix_2)
     
