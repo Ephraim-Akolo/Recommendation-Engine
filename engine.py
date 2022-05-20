@@ -2,6 +2,8 @@ __version__ = "0.1"
 
 import numpy as np
 import joblib
+from auxiliary import write_file
+
 
 class RecommendationEngine:
     '''
@@ -159,6 +161,12 @@ class RecommendationEngine:
                 tol = 0
                 old_total_loss = total_loss
         print(count)
+
+    def cosine_similarity(self, x:np.ndarray, y:np.ndarray, decimal_place=2):
+        '''
+        Finds the cosine similarity between two vectors. (x, y)
+        '''
+        return round(x.dot(y) / (np.sqrt(np.square(x).sum()) * np.sqrt(np.square(y).sum())), decimal_place)
     
 
     def recommend(self):
@@ -167,7 +175,11 @@ class RecommendationEngine:
 if __name__ == "__main__":
     r = RecommendationEngine()
     m = np.random.default_rng().integers(0, 5, size=(50, 50), dtype=np.int8)
+    write_file(["Test Sample", m], new=True)
     r.train( m)
     print(r.matrix_1.dot(r.matrix_2).round())
     print(m)
+    # a = np.array([3, 2, 0, 5 ])
+    # b = np.array([1, 0, 0, 0])
+    # print(r.cosine_similarity(a, b, decimal_place=4))
    
