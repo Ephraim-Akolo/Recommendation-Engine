@@ -29,6 +29,8 @@ class RecommendationEngine:
 
         R (2): the matrix factorization size.
 
+        matrix_init ("random", "ones"): initializes the matrices randomly or with 1's.
+
     '''
    
     learning_rate = 0.01
@@ -53,7 +55,9 @@ class RecommendationEngine:
 
     R = 2
 
-    def __init__(self, learning_rate:float=None, l1=0.01, gradient:str=None, tol:int=None , max_iter:int=None, min_M:int=None, min_N:int=None, max_rating:int=None, R:int=None) -> None:
+    matrix_init = "random"
+
+    def __init__(self, learning_rate:float=None, l1=0.01, gradient:str=None, tol:int=None , max_iter:int=None, min_M:int=None, min_N:int=None, max_rating:int=None, R:int=None, matrix_init:str=None) -> None:
         if learning_rate:
             self.learning_rate = learning_rate
         if l1:
@@ -72,6 +76,8 @@ class RecommendationEngine:
             self.max_rating = max_rating
         if R:
             self.R = R
+        if matrix_init:
+            self.matrix_init = matrix_init
     
     def warm_training(self,id:int, products:np.ndarray, feature="product"):
         '''
@@ -86,25 +92,23 @@ class RecommendationEngine:
         '''
         pass
 
-    def train(self, matrix:np.ndarray, matrix_init = "random") -> None:
+    def train(self, matrix:np.ndarray) -> None:
         '''
         Train the model with fresh data (matrix).
 
         Parameters:
 
             matrix (numpy array): the training data (matrix).
-
-            matrix_init ("random", "ones"): initializes the matrices randomly or with 1's.
         '''
         M, N = matrix.shape
         self.no_of_ratings = no_of_ratings = (matrix > 0).sum()
         if M < self.min_M or N < self.min_N or no_of_ratings < self.max_rating:
             return
         rng = np.random.default_rng()
-        if matrix_init == "random":
+        if self.matrix_init == "random":
             matrix_1 = rng.uniform(1, 2, size=(M, self.R))
             matrix_2 = rng.uniform(1, 2, size=(self.R, N))
-        elif matrix_init == "ones":
+        elif self.matrix_init == "ones":
             matrix_1 = np.ones((M, self.R), dtype=np.float16)
             matrix_2 = np.ones((self.R, N), dtype=np.float16)
         self.matrix_1 = np.ones((M, self.R), dtype=np.float16)
