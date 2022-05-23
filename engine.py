@@ -3,6 +3,7 @@ __version__ = "0.1"
 import numpy as np
 import joblib
 from auxiliary import write_file
+from pathlib import Path
 
 
 class RecommendationEngine:
@@ -35,23 +36,23 @@ class RecommendationEngine:
 
     '''
    
-    learning_rate = 0.01
+    learning_rate = 0.005
 
-    l1 = 0.01
+    l1 = 0.02
 
     gradient = "stoch"
 
     tol = 500
 
-    max_iter = 50000
+    max_iter = 5000000
 
     M = 0
 
     N = 0
 
-    min_M = 3
+    min_M = 3 #No of users
 
-    min_N = 3
+    min_N = 10 #No of products
 
     max_rating = 10
 
@@ -59,7 +60,9 @@ class RecommendationEngine:
 
     matrix_init = "random"
 
-    def __init__(self, learning_rate:float=None, l1=0.01, gradient:str=None, tol:int=None , max_iter:int=None, min_M:int=None, min_N:int=None, max_rating:int=None, R:int=None, matrix_init:str=None) -> None:
+    model_dir = Path("./data/models")
+
+    def __init__(self, learning_rate:float=None, l1=0.01, gradient:str=None, tol:int=None , max_iter:int=None, min_M:int=None, min_N:int=None, max_rating:int=None, R:int=None, matrix_init:str=None, model_dir:str=None) -> None:
         if learning_rate:
             self.learning_rate = learning_rate
         if l1:
@@ -80,6 +83,8 @@ class RecommendationEngine:
             self.R = R
         if matrix_init:
             self.matrix_init = matrix_init
+        if model_dir:
+            self.model_dir = Path(model_dir)
     
     def warm_training(self,id:int, products:np.ndarray, feature="product"):
         '''
@@ -94,7 +99,7 @@ class RecommendationEngine:
         '''
         pass
 
-    def train(self, matrix:np.ndarray) -> None:
+    def train(self, matrix:np.ndarray) -> list:
         '''
         Train the model with fresh data (matrix).
 
@@ -118,13 +123,14 @@ class RecommendationEngine:
         self.M = M
         self.N = N
         if self.gradient == "stoch":
-            self._stochastic_gradient_decent(matrix, matrix_1, matrix_2)
+           return self._stochastic_gradient_decent(matrix, matrix_1, matrix_2)
     
-    def _stochastic_gradient_decent(self, matrix:np.ndarray, matrix_1:np.ndarray, matrix_2:np.ndarray):
+    def _stochastic_gradient_decent(self, matrix:np.ndarray, matrix_1:np.ndarray, matrix_2:np.ndarray) -> list:
         '''
         The stochastic gradient decent used to find the global minima of the.
         '''
         loss = np.zeros(self.no_of_ratings)
+        loss_list = []
         learning_rate = self.learning_rate
         l1 = self.l1
         R = self.R
@@ -149,7 +155,6 @@ class RecommendationEngine:
                     rating_no += 1
             total_loss = np.average(loss)
             print("Loss:", total_loss)
-
             if tol >= _tol:
                 break
             if total_loss >= old_total_loss:
@@ -159,8 +164,14 @@ class RecommendationEngine:
                     self.matrix_2[:] = matrix_2
             else:
                 tol = 0
+                loss_list.append(total_loss)
                 old_total_loss = total_loss
         print(count)
+        n = np.round(self.matrix_1.dot(self.matrix_2))
+        n[n > 5] = 5
+        n[n < 0] = 0
+        write_file(["Recommendataion Matrix", n, "Matrix 1", self.matrix_1, "Matrix 2", self.matrix_2])
+        return loss_list
 
     def cosine_similarity(self, x:np.ndarray, y:np.ndarray, decimal_place=2):
         '''
@@ -168,14 +179,17 @@ class RecommendationEngine:
         '''
         return round(x.dot(y) / (np.sqrt(np.square(x).sum()) * np.sqrt(np.square(y).sum())), decimal_place)
     
-
-    def recommend(self):
+    def get_new_products(self):
         pass
-            
+
+    def get_random_products(self):
+        pass
+
+    
 if __name__ == "__main__":
-    r = RecommendationEngine()
-    m = np.random.default_rng().integers(0, 5, size=(50, 50), dtype=np.int8)
-    write_file(["Test Sample", m], new=True)
+    r = RecommendationEngine(R=4, max_iter=500)
+    m = np.random.default_rng().integers(0, 5, size=(10, 10), dtype=np.int8)
+    write_file(["Test Sample", m])
     r.train( m)
     print(r.matrix_1.dot(r.matrix_2).round())
     print(m)
