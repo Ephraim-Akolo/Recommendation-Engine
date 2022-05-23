@@ -1,1 +1,3 @@
 *.txt
+__pychache__
+_del_/*
