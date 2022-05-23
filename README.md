@@ -60,11 +60,14 @@ __Project source code:__
 
 
 
-
-
-
 ### Model  training flowchart
 ![flowchart](https://github.com/jake-ephraim/Recommendation-Engine/raw/master/data/images/model%20flowchart.png)
 
+
+## Recommendation system
+
+
 ## Deployment
 Model will be deployed as a service i.e it will be hosted on a server where it can be ascessed through a post or get request. The model will be continously monitored and maintained by the machine learning team. This is because models intelligence tend to degrade overtime as human behavoir also changes with time, therefore, the model has to be retrained occationally and redeployed to service.
+
+
