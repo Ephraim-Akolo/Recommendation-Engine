@@ -85,6 +85,7 @@ class RecommenderDatabase:
                 cur.execute(f'UPDATE {table} SET {s1} where rowid = ?', (*l, rowid+1))
             else:
                 cur.execute(f'INSERT INTO {table} ({s2[0]}) VALUES ({s2[1]}) ', l)
+        cur.execute("UPDATE utility SET trained=1 where rowid=1")
         self.conn.commit()
         return True
     
