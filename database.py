@@ -31,6 +31,7 @@ class RecommenderDatabase:
             cur.execute("CREATE TABLE IF NOT EXISTS product_features(feature_1 REAL, feature_2 REAL)")
             cur.execute("CREATE TABLE IF NOT EXISTS utility(num_features INT, num_trained_user INT, num_trained_product INT, trained INT)")
             cur.execute("INSERT INTO utility (num_features, num_trained_user, num_trained_product, trained) VALUES (2, 0, 0, 0)")
+            cur.execute("DELETE FROM utility WHERE rowid > 1")
             self.conn.commit()
         except sqlite3.Error:
             if self.conn:
@@ -86,6 +87,13 @@ class RecommenderDatabase:
             else:
                 cur.execute(f'INSERT INTO {table} ({s2[0]}) VALUES ({s2[1]}) ', l)
         cur.execute("UPDATE utility SET trained=1 where rowid=1")
+        self.conn.commit()
+        return True
+    
+    def update_database_row(self, array:list, row_id:int, table:str="user_features"):
+        s = self.generate_features_name(self.get_count())
+        cur = self.conn.cursor()
+        cur.execute(f'UPDATE {table} SET {s} where rowid = ?', (*array, row_id))
         self.conn.commit()
         return True
     
