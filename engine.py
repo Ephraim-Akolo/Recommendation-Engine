@@ -1,7 +1,4 @@
-__version__ = "0.1"
-
 import numpy as np
-import joblib
 from auxiliary import write_file
 from pathlib import Path
 

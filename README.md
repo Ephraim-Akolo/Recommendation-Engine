@@ -50,7 +50,8 @@ __Build language:__
 
 __Project Frameworks:__
 
-    • Flask
+    • FastAPI
+    • SQLite3
     • (MongoDB)
 
 __Project source code:__
