@@ -1,6 +1,6 @@
 # SAKO RECOMMENDATION ENGINE PROJECT
 
-Project statement: Build a recommendation engine tfor the Sako user application that recommends products from a database of products (groceries) in their categrories. 
+Project statement: Build a recommendation engine for the Sako user application that recommends products from a database of products (groceries) in their categrories. 
 
 ### Milestones
 
@@ -18,7 +18,7 @@ Project statement: Build a recommendation engine tfor the Sako user application 
 
     • Model should be able to give useful recommendation custom to users.
     • Model should be able to retrain its self at post-determined specifications.
-    • Model should be efficient and versatile.
+    • Model should be efficient and scalable.
     • Model should solve the cold-start problem.
     • Automated incremental learning
 
