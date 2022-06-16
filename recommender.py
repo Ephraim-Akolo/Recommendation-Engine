@@ -1,5 +1,6 @@
 from pathlib import Path
 import numpy as np
+from numpy.linalg import norm
 ##
 from database import RecommenderDatabase
 
@@ -49,12 +50,12 @@ class RecommendationSystem():
         Finds similar items to last viewed item and mearged them into a single vector of recommendation.
         '''
     
-    def cosine_similarity(self, x:np.ndarray, y:np.ndarray, decimal_place=2) -> float:
+    def cosine_similarity(self, product:np.ndarray, products:np.ndarray, decimal_place=2) -> float:
         '''
-        Finds the cosine similarity between two vectors. (x, y)
-        # Recommend similar products
+        Finds the cosine similarity between a vector and an array of vectors
+        :param
         '''
-        return round(x.dot(y) / (np.sqrt(np.square(x).sum()) * np.sqrt(np.square(y).sum())), decimal_place)
+        return np.dot(products,product)/(norm(products, axis=1)*norm(product))
 
     def recommend_trending(self):
         pass
