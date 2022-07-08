@@ -34,13 +34,15 @@ Project statement: Build a recommendation engine for the Sako user application t
 ## Recommendation System:
 
 ### Model
-Model algorithm is designed based on the matrix factorization principle (dimensionality reduction). It is a linear model with no inputs or activation function. The complete model is design as an incremental learning algorithm i.e it is able to retrain itself without forgetting its previous knowledge (warm start).
+Model algorithm is currentlyy designed based on the bayesian beta distribution sampling. It is the model chosen to solve the current cold start problem of the application. The model has the advantage of exploiting and exploring at the same time. The algorithm is best for the current use case as it does not rely on any personalized data (we currently do not have).
 
 __Other research algorithms:__
 
-    • weighted Matrix factorization: can account for the problem of user bias.
-    • RNN: can find partern in a user buying habits.
-    • clustering: can solve the problem of recommending to new users.
+    • Matrix factorization
+    • RNN/NLP
+    • Clustering
+    • Autoencoders
+    • Restricted Boltzmann Machines
 
 __Build language:__
 
@@ -51,18 +53,14 @@ __Build language:__
 __Project Frameworks:__
 
     • FastAPI
-    • SQLite3
-    • (MongoDB)
+    • MySQL
+    • Pytorch
+    • TensorFlow
 
 __Project source code:__
 
 
 [https://github.com/jake-ephraim/Recommendation-Engine/tree/master](https://github.com/jake-ephraim/Recommendation-Engine/tree/master)
-
-
-
-### Model  training flowchart
-![flowchart](https://github.com/jake-ephraim/Recommendation-Engine/raw/master/data/images/model%20flowchart.png)
 
 
 ## Recommendation system

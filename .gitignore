@@ -3,3 +3,5 @@ __pycache__/*
 _del_/*
 data/databases/*
 notebook.ipynb
+config.json
+private.py
