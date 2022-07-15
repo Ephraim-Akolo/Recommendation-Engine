@@ -14,12 +14,15 @@ app = FastAPI()
 class UserData(BaseModel):
     user_id: int
     last_items: Union[list[int], None] = None
+    acces_code: str
 
 class NewUser(BaseModel):
     user_id: int
+    access_code: str
 
 class NewItem(BaseModel):
     item_id: int
+    access_code: str
 
 class PassCode(BaseModel):
     password: str
@@ -27,14 +30,15 @@ class PassCode(BaseModel):
 
 class BayesianData(BaseModel):
     data: Dict[str,int]
+    access_code: str
 
 
 @app.get('/')
-def index():
+async def index():
     '''
     Application root.
     '''
-    return {"Server": "Running", "engine": app.state.recommender.name_, "No_processors": cpu_count()}
+    return {"Server": "Running", "engine": app.state.recommender.name_, "server_processors": cpu_count()}
 
 async def recommend_in_process(fn, user_id:int, last_items:list):
     '''
@@ -54,11 +58,13 @@ async def make_recommendation(userid:UserData):
         :param userid: the unique serial number of the user.
         :returns: a json (map) of the recommendations made.
     '''
-    recomm = None
-    if userid.last_items is not None and len(userid.last_items) == 0:
-        userid.last_items = None
-    recomm = await recommend_in_process(app.state.recommender, userid.user_id, userid.last_items)
-    return {"recommendations": recomm}
+    if hash_password(userid.acces_code) == app.state.ACCESS_CODE:
+        recomm = None
+        if userid.last_items is not None and len(userid.last_items) == 0:
+            userid.last_items = None
+        recomm = await recommend_in_process(app.state.recommender, userid.user_id, userid.last_items)
+        return {"recommendations": recomm}
+    return {"Unauthorized User"}
 
 @app.post("/update_bayesian_features")
 async def update_bayesian_db(data:BayesianData):
@@ -67,34 +73,36 @@ async def update_bayesian_db(data:BayesianData):
         :param data: A dictionary mapping the interaction of a user and the products seen.
         :returns: True if successfully updated otherwise False.
     '''
-    if len(data.data) == 0:
+    if hash_password(data.access_code) == app.state.ACCESS_CODE:
+        if len(data.data) == 0:
+            return False
+        d0, d1, d2 = [], [], []
+        for key, val in data.data.items():
+            if val == 0:
+                d0.append(int(key))
+            elif val == 1:
+                d1.append(int(key))
+            elif val == 2:
+                d2.append(int(key))
+        l = []
+        if len(d0) == 1:
+            l.append(f'UPDATE bayesian_features SET b=b+1, viewCount=viewCount+1 WHERE id={d0[0]}')
+        elif len(d0) > 1:
+            l.append(f'UPDATE bayesian_features SET b=b+1, viewCount=viewCount+1 WHERE id IN {tuple(d0)}')
+        if len(d1) == 1:
+            l.append(f'UPDATE bayesian_features SET a=a+0.7, viewCount=viewCount+1, clickedCount=clickedCount+1 WHERE id={d1[0]}')
+        elif len(d1) > 1:
+            l.append(f'UPDATE bayesian_features SET a=a+0.7, viewCount=viewCount+1, clickedCount=clickedCount+1 WHERE id IN {tuple(d1)}')
+        if len(d2) == 1:
+            l.append(f'UPDATE bayesian_features SET a=a+1, viewCount=viewCount+1, clickedCount=clickedCount+1, boughtCount=boughtCount+1 WHERE id={d2[0]}')
+        elif len(d2) > 1:
+            l.append(f'UPDATE bayesian_features SET a=a+1, viewCount=viewCount+1, clickedCount=clickedCount+1, boughtCount=boughtCount+1 WHERE id IN {tuple(d2)}')
+        if len(l) < 0:
+            return False
+        if app.state.recommender.database.update_bayesian_db(*l):
+            return True
         return False
-    d0, d1, d2 = [], [], []
-    for key, val in data.data.items():
-        if val == 0:
-            d0.append(int(key))
-        elif val == 1:
-            d1.append(int(key))
-        elif val == 2:
-            d2.append(int(key))
-    l = []
-    if len(d0) == 1:
-        l.append(f'UPDATE bayesian_features SET b=b+1, viewCount=viewCount+1 WHERE id={d0[0]}')
-    elif len(d0) > 1:
-        l.append(f'UPDATE bayesian_features SET b=b+1, viewCount=viewCount+1 WHERE id IN {tuple(d0)}')
-    if len(d1) == 1:
-        l.append(f'UPDATE bayesian_features SET a=a+0.7, viewCount=viewCount+1, clickedCount=clickedCount+1 WHERE id={d1[0]}')
-    elif len(d1) > 1:
-        l.append(f'UPDATE bayesian_features SET a=a+0.7, viewCount=viewCount+1, clickedCount=clickedCount+1 WHERE id IN {tuple(d1)}')
-    if len(d2) == 1:
-        l.append(f'UPDATE bayesian_features SET a=a+1, viewCount=viewCount+1, clickedCount=clickedCount+1, boughtCount=boughtCount+1 WHERE id={d2[0]}')
-    elif len(d2) > 1:
-        l.append(f'UPDATE bayesian_features SET a=a+1, viewCount=viewCount+1, clickedCount=clickedCount+1, boughtCount=boughtCount+1 WHERE id IN {tuple(d2)}')
-    if len(l) < 0:
-        return False
-    if app.state.recommender.database.update_bayesian_db(*l):
-        return True
-    return False
+    return {"Unauthorized User"}
 
 @app.post("/update_bayesian_items")
 async def update_bayesian_items(newitem:NewItem):
@@ -103,7 +111,9 @@ async def update_bayesian_items(newitem:NewItem):
         :param newitem: the unique serial number of the item enlisted.
         :returns: True if item is successfully added and False if something went wrong.
     '''
-    return app.state.recommender.database.update_bayesian_items(newitem.item_id)
+    if hash_password(newitem.access_code) == app.state.ACCESS_CODE:
+        return app.state.recommender.database.update_bayesian_items(newitem.item_id)
+    return {"Unauthorized User"}
 
 @app.post("/refresh_data_from_db")
 async def refresh_data_from_db(passcode:PassCode):
@@ -114,6 +124,7 @@ async def refresh_data_from_db(passcode:PassCode):
     '''
     if hash_password(passcode.password) == app.state.PASS_CODE:
         return app.state.recommender.refresh_data_from_db()
+    return {"Unauthorized User"}
 
 @app.post("/reload_model")
 async def reload_model(name:PassCode):
@@ -130,6 +141,7 @@ async def reload_model(name:PassCode):
         app.state.recommender = recommender
         # update config
         return True
+    return {"Unauthorized User"}
 
 def load_model(name:str=None):
     '''
@@ -197,6 +209,7 @@ async def on_startup():
     app.state.recommender = load_model()
     app.state.recommender.load_products_to_memory()
     app.state.PASS_CODE = '8f07077afffb95cb192fe250f7bd10fc47a9a263ff69d6ccbc2889eeee43242b'
+    app.state.ACCESS_CODE = 'dabd42bd0284c2d7f3038df67539cba5b5c0317c8b969f96b5e6643f333c7308'
 
 @app.on_event("shutdown")
 async def on_shutdown():
