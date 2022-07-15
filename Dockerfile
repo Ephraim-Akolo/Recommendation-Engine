@@ -21,5 +21,9 @@ COPY . /app
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
 
+ENV ACCESS_LOG=${ACCESS_LOG:-/proc/1/fd/1}
+
+ENV ERROR_LOG=${ERROR_LOG:-/proc/1/fd/2}
+
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["gunicorn", "--bind", "0.0.0.0:8004","-w", "2", "-k", "uvicorn.workers.UvicornWorker", "app:app"]
+CMD ["gunicorn", "--worker-tmp-dir", "/dev/shm","--bind", "0.0.0.0:8004","-w", "2", "-k", "uvicorn.workers.UvicornWorker", "app:app", "--access-logfile", "$ACCESS_LOG", "--error-logfile", "$ERROR_LOG", "--log-file", "-"]
