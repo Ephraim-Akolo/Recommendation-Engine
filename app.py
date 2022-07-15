@@ -34,7 +34,7 @@ def index():
     '''
     Application root.
     '''
-    return {"Server": "Running", "engine": app.state.recommender.name_}
+    return {"Server": "Running", "engine": app.state.recommender.name_, "No_processors": cpu_count()}
 
 async def recommend_in_process(fn, user_id:int, last_items:list):
     '''
@@ -204,5 +204,6 @@ async def on_shutdown():
     app.state.recommender.release_products_memory()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host='127.0.0.1', port=8004)
+    pass
+    #uvicorn.run(app, host='127.0.0.1', port=8004)
     #uvicorn app:app --reload

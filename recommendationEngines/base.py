@@ -252,7 +252,17 @@ class RecommendationBase():
         self.shared_mem_shape = products_array.shape
         self.shared_mem_datatype = np.float32
         d_size = np.dtype(self.shared_mem_datatype).itemsize * np.prod(self.shared_mem_shape)
-        shm = shared_memory.SharedMemory(create=True, size=d_size, name=name)
+        n = 0
+        while 1:
+            try:
+                shm = shared_memory.SharedMemory(create=True, size=d_size, name=name)
+                break
+            except FileExistsError as e:
+                n += 1
+                print("Renaming memory!")
+                self.shared_mem_name = name = name + str(n)
+            except Exception as e:
+                raise(e)
         # numpy array on shared memory buffer
         product_list = np.ndarray(shape=self.shared_mem_shape, dtype=self.shared_mem_datatype, buffer=shm.buf)
         product_list[:] = products_array[:]
@@ -279,6 +289,4 @@ class RecommendationBase():
 
     
 if __name__ == "__main__":
-    import pickle
-    with open("./data/models/recommender.pkl", 'wb') as fp:
-        pickle.dump(RecommendationBase(), fp)
+    pass

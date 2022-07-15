@@ -1,6 +1,6 @@
 from mysql.connector import Error, pooling
 import numpy as np
-from private import credentials
+from private import online_credentials as use_credentials
 
 MYSQL_CONNECTIONS_COUNT = 7
 
@@ -17,7 +17,7 @@ while 1:
             pool_name="recommendation_pool",
             pool_size=MYSQL_CONNECTIONS_COUNT,
             pool_reset_session=True,
-            **credentials
+            **use_credentials
         )
         print('mysql pool name: ', connection_pool.pool_name, 'mysql pool size: ', connection_pool.pool_size)
         conn = connection_pool.get_connection()
@@ -25,8 +25,8 @@ while 1:
         cur.execute(f"SELECT * FROM {TABLES[1]}")
         _tables_data = cur.fetchone()
         break
-    except Error:
-        print("MySQL pool failed to initialize")
+    except Error as e:
+        print("MySQL pool failed to initialize", e)
 
 def get_sql_manager(func):
     def inner(*args, **kwargs):
