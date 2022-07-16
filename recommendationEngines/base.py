@@ -5,6 +5,9 @@ import json
 # from optimized.optimized_functions import merge_recommendations_
 ##
 from recommendationEngines.database.database import RecommenderDatabase
+from os import environ
+import logging
+logger =logging.getLogger(environ.get("SAKO_LOGGER_NAME"))
 
 
 class RecommendationBase():
@@ -51,7 +54,7 @@ class RecommendationBase():
             return True
         except Exception as e:
             self.config = None
-            print("FAILED TO READ CONFIG FILE WITH ERROR: ", e)
+            logger.error(f"FAILED TO READ CONFIG FILE WITH ERROR: {e}")
             return False    
 
     def update_config(self, data:dict):
@@ -70,7 +73,7 @@ class RecommendationBase():
                         json.dump(self.config, fp)
             return updated_config
         except Exception as e:
-            print("FAILED TO UPDATE CONFIG FILE WITH ERROR: ", e)
+            logger.error(f"FAILED TO UPDATE CONFIG FILE WITH ERROR: {e}")
             return None
 
     def is_trained(self) -> tuple[bool, bool]:
@@ -259,7 +262,7 @@ class RecommendationBase():
                 break
             except FileExistsError as e:
                 n += 1
-                print("Renaming memory!")
+                logger.info("Renaming memory!")
                 self.shared_mem_name = name = name + str(n)
             except Exception as e:
                 raise(e)

@@ -1,6 +1,9 @@
 from mysql.connector import Error, pooling
 import numpy as np
-from private import online_credentials as use_credentials
+from private import credentials as use_credentials
+from os import environ
+import logging
+logger =logging.getLogger(environ.get("SAKO_LOGGER_NAME"))
 
 MYSQL_CONNECTIONS_COUNT = 7
 
@@ -19,14 +22,15 @@ while 1:
             pool_reset_session=True,
             **use_credentials
         )
-        print('mysql pool name: ', connection_pool.pool_name, 'mysql pool size: ', connection_pool.pool_size)
+        logger.info(f'mysql pool name: {connection_pool.pool_name}')
+        logger.info(f'mysql pool size: {connection_pool.pool_size}')
         conn = connection_pool.get_connection()
         cur = conn.cursor()
         cur.execute(f"SELECT * FROM {TABLES[1]}")
         _tables_data = cur.fetchone()
         break
     except Error as e:
-        print("MySQL pool failed to initialize", e)
+        logger.error(f"MySQL pool failed to initialize: {e}")
 
 def get_sql_manager(func):
     def inner(*args, **kwargs):
@@ -40,7 +44,7 @@ def get_sql_manager(func):
             result = cur.fetchall()
             result = np.array(result).astype(_t)
         except Error as err:
-            print("Connection to MySQL failed... Retrying...")
+            logger.error("Connection to MySQL failed... Retrying...")
             return False
         finally:
             if cur:
@@ -63,7 +67,7 @@ def post_sql_manager(func):
             conn.commit()
         except Error as err:
             conn.rollback()
-            print("Connection to MySQL failed... Retrying...", err)
+            logger.error(f"Connection to MySQL failed... Retrying... {err}")
             return False
         finally:
             if cur:

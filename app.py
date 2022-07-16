@@ -7,8 +7,15 @@ from concurrent.futures import ProcessPoolExecutor
 import asyncio
 import json
 from hashlib import sha256
+import logging
+from os import environ
+
 
 app = FastAPI()
+
+logger_name = "gunicorn.error" if __name__ != "__main__" else "uvicorn.error"
+environ["SAKO_LOGGER_NAME"] = logger_name
+logger = logging.getLogger(logger_name) 
 
 
 class UserData(BaseModel):
@@ -157,16 +164,16 @@ def load_model(name:str=None):
             with open("./config.json", 'r') as fp:
                 d = json.load(fp)
                 engine_name = d['engine_name']
-                print(engine_name)
         except:
             engine_name = "recommendationEngine_v1_0"
     try:
         exec(f"from recommendationEngines.{engine_name} import Recommender", globals())
         recommender = Recommender()
         recommender.name_ = engine_name
+        logger.info(f'{engine_name} loaded!')
         return recommender
     except Exception as e:
-        print(e)
+        logger.error(e)
         return None
     
 def hash_password(password:str):
@@ -189,6 +196,7 @@ def create_config(config_path = "./config.json") -> bool:
         try:
             with open(config_path, 'r'):
                 pass
+            logger.info("CANNOT CREATE CONFIG FILE!!! FILE EXIST.")
             print("CANNOT CREATE CONFIG FILE!!! FILE EXIST.")
             return False
         except FileNotFoundError:
@@ -197,9 +205,11 @@ def create_config(config_path = "./config.json") -> bool:
                     json.dump(data, fp)
                 return True
             except Exception as e:
+                logger.error("FAILED TO CREATE THE CONFIG FILE WITH ERROR: {e}")
                 print("FAILED TO CREATE THE CONFIG FILE WITH ERROR: ", e)
                 return False
         except Exception as e:
+            logger.error(f"UNKNOWN ERROR: {e}")
             print("UNKNOWN ERROR: ", e)
 
 @app.on_event("startup")

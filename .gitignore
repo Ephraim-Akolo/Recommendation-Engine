@@ -5,3 +5,4 @@ notebook.ipynb
 config.json
 private.py
 .vscode
+logs/logfile.log
