@@ -1,6 +1,6 @@
 from mysql.connector import Error, pooling
 import numpy as np
-from private import credentials as use_credentials
+from private import online_credentials as use_credentials
 from os import environ
 import logging
 logger =logging.getLogger(environ.get("SAKO_LOGGER_NAME"))
