@@ -6,3 +6,5 @@ config.json
 private.py
 .vscode
 logs/logfile.log
+recommendationEngines/__pycache__/*
+recommendationEngines/database/__pycache__/*
