@@ -25,4 +25,5 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 **/logs/logfile.log
+**/trainingEngines
 README.md
