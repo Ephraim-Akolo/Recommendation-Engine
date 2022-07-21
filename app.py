@@ -76,7 +76,7 @@ async def make_recommendation(userid:UserData):
 @app.post("/update_bayesian_features")
 async def update_bayesian_db(data:BayesianData):
     '''
-    update seen(0), click(1) and buy(2) status of the products (items) seen by the user.
+    update seen(0), click(1) and buy(3) status of the products (items) seen by the user.
         :param data: A dictionary mapping the interaction of a user and the products seen.
         :returns: True if successfully updated otherwise False.
     '''
@@ -89,7 +89,7 @@ async def update_bayesian_db(data:BayesianData):
                 d0.append(int(key))
             elif val == 1:
                 d1.append(int(key))
-            elif val == 2:
+            elif val == 3:
                 d2.append(int(key))
         l = []
         if len(d0) == 1:
