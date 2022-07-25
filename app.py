@@ -21,7 +21,7 @@ logger = logging.getLogger(logger_name)
 class UserData(BaseModel):
     user_id: int
     last_items: Union[list[int], None] = None
-    acces_code: str
+    access_code: str
 
 class NewUser(BaseModel):
     user_id: int
@@ -65,7 +65,7 @@ async def make_recommendation(userid:UserData):
         :param userid: the unique serial number of the user.
         :returns: a json (map) of the recommendations made.
     '''
-    if hash_password(userid.acces_code) == app.state.ACCESS_CODE:
+    if hash_password(userid.access_code) == app.state.ACCESS_CODE:
         recomm = None
         if userid.last_items is not None and len(userid.last_items) == 0:
             userid.last_items = None

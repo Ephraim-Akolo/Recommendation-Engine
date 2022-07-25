@@ -136,7 +136,6 @@ class RecommenderDatabase:
     
 
 if __name__ == "__main__":
-    from private import credentials
     db = RecommenderDatabase()
     a= db.get_beta_values()
     print(a)
